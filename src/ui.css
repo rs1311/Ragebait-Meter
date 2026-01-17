@@ -1,0 +1,228 @@
+/* Overlay */
+#rbm-overlay {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  width: 360px;
+  z-index: 2147483647;
+  color: #eef1f6;
+  background: rgba(18, 18, 22, 0.92);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  font: 12.5px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+
+.rbm-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 6px 12px;
+}
+
+.rbm-title {
+  font-weight: 750;
+  letter-spacing: 0.2px;
+}
+
+.rbm-actions { display: flex; gap: 8px; }
+
+.rbm-sub {
+  padding: 0 12px 10px 12px;
+  color: rgba(238,241,246,0.75);
+  font-size: 11.5px;
+}
+
+.rbm-body { padding: 0 12px 12px 12px; }
+
+.rbm-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.rbm-metric {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.rbm-k { color: rgba(238,241,246,0.72); font-size: 11px; }
+.rbm-v { font-size: 18px; font-weight: 780; margin-top: 3px; }
+
+.rbm-bar {
+  height: 7px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.rbm-bar > div {
+  height: 100%;
+  background: rgba(220, 230, 255, 0.78);
+  border-radius: 999px;
+}
+.rbm-bar.small { height: 6px; margin-top: 7px; }
+
+.rbm-section {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+}
+
+.rbm-section-title {
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+
+.rbm-heat {
+  height: 54px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 4px 2px 2px 2px;
+}
+
+.rbm-heat-seg {
+  width: 100%;
+  max-width: 10px;
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 1px;
+  align-items: end;
+}
+.rbm-heat-seg .h1, .rbm-heat-seg .h2, .rbm-heat-seg .h3 {
+  width: 100%;
+  border-radius: 4px;
+}
+.rbm-heat-seg .h1 { background: rgba(255, 95, 95, 0.75); align-self: end; }
+.rbm-heat-seg .h2 { background: rgba(255, 200, 95, 0.75); align-self: end; }
+.rbm-heat-seg .h3 { background: rgba(140, 180, 255, 0.75); align-self: end; }
+
+.rbm-legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  color: rgba(238,241,246,0.72);
+  font-size: 11px;
+}
+.dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.dot.d1 { background: rgba(255, 95, 95, 0.75); }
+.dot.d2 { background: rgba(255, 200, 95, 0.75); }
+.dot.d3 { background: rgba(140, 180, 255, 0.75); }
+
+.rbm-cards {
+  display: grid;
+  gap: 8px;
+}
+
+.rbm-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 9px;
+}
+
+.rbm-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+.rbm-card-title { font-weight: 600; color: rgba(238,241,246,0.88); }
+.rbm-card-score { color: rgba(238,241,246,0.72); }
+
+.rbm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+
+.rbm-btn {
+  appearance: none;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.10);
+  color: #eef1f6;
+  padding: 7px 9px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.rbm-btn:hover { background: rgba(255,255,255,0.12); }
+.rbm-btn.wide { width: 100%; }
+
+.rbm-blocker {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  background: rgba(0,0,0,0.58);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 18px system-ui;
+  color: #fff;
+}
+
+/* Blur intervention applied to actual <p> tags */
+.rbm-blur { filter: blur(5px); }
+.rbm-blur:hover { filter: none; }
+
+/* ---- RBM Emotion Heat Fix ---- */
+#rbm-overlay .rbm-heat{
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 56px;              /* critical: gives % heights meaning */
+  padding: 6px 0;
+  overflow: hidden;
+}
+
+#rbm-overlay .rbm-heat-seg{
+  width: 7px;                /* critical: gives segments visible width */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1px;
+  border-radius: 3px;
+  overflow: hidden;
+  opacity: 0.95;
+}
+
+/* Each stacked bar */
+#rbm-overlay .rbm-heat-seg .h1,
+#rbm-overlay .rbm-heat-seg .h2,
+#rbm-overlay .rbm-heat-seg .h3{
+  width: 100%;
+  min-height: 1px;           /* critical: prevents rounding to 0 */
+}
+
+/* If you don't already have colors, add them */
+#rbm-overlay .rbm-heat-seg .h1{ background: rgba(255, 90, 90, 0.95); }
+#rbm-overlay .rbm-heat-seg .h2{ background: rgba(255, 200, 90, 0.95); }
+#rbm-overlay .rbm-heat-seg .h3{ background: rgba(150, 120, 255, 0.95); }
+
+/* Ragebait Meter container */
+.rbm-meter {
+  border-radius: 18px 18px 0 0; /* top rounded, bottom straight */
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.18),
+    rgba(255,255,255,0.06)
+  );
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255,255,255,0.25);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.35);
+  overflow: hidden;
+}
+

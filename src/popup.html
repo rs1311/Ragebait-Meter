@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { margin:0; font: 13px system-ui; background:#0f1116; color:#eef1f6; width: 320px; }
+      .wrap { padding: 12px; }
+      .title { font-weight: 800; margin-bottom: 10px; }
+      .row { display:flex; justify-content: space-between; align-items:center; padding: 8px 0; }
+      .btns { display:flex; gap: 8px; margin-top: 10px; }
+      button { width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.10); color:#eef1f6; padding: 8px; border-radius: 12px; cursor:pointer; font-weight:700; }
+      button:hover { background: rgba(255,255,255,0.12); }
+      .hint { color: rgba(238,241,246,0.70); font-size: 12px; margin-top: 10px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="title">Ragebait Meter</div>
+      <div class="row">
+        <div>Enabled</div>
+        <input id="enabled" type="checkbox" />
+      </div>
+      <div class="btns">
+        <button id="options">Options</button>
+        <button id="rerun">Re-run</button>
+      </div>
+      <div class="hint">Runs locally. Emotion ML + manipulation heuristics.</div>
+    </div>
+    <script src="storage.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

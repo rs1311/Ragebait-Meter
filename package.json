@@ -1,0 +1,16 @@
+{
+  "name": "ragebait-meter",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copy:transformers": "node -e \"const fs=require('fs');const path=require('path');const src=path.join('node_modules','@xenova','transformers','dist');const dst=path.join('src','vendor');fs.mkdirSync(dst,{recursive:true});fs.cpSync(src,dst,{recursive:true});console.log('copied',src,'->',dst);\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@xenova/transformers": "^2.17.2"
+  }
+}
