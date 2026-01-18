@@ -529,6 +529,14 @@
           <div class="rbm-section-title">How bad is it?</div>
           <div class="rbm-quote" id="rbm-quote"></div>
         </div>
+        <div class="rbm-section" id="rbm-catsec" style="display:none;">
+          <div class="rbm-section-title">Sorry About The Ragebait, Hope The Cats Cheer You Up!</div>
+          <div id="rbm-catcount"
+              style="font-size:18px;font-weight:900;letter-spacing:0.02em;line-height:1.25;color:rgba(238,241,246,0.85);">
+            —
+          </div>
+        </div>
+
         <div class="rbm-section">
           <div class="rbm-section-title">Ragebait profile</div>
           <div id="rbm-radar"
@@ -596,7 +604,35 @@
     } catch {}
 
 
-    const toggleDrawer = () => el.classList.toggle("rbm-open");
+    let rbmFxHasFiredThisOpen = false;
+
+    const toggleDrawer = () => {
+      const willOpen = !el.classList.contains("rbm-open");
+      el.classList.toggle("rbm-open");
+      if (!willOpen) return;
+
+      rbmFxHasFiredThisOpen = false;
+
+      const score = Number(el.dataset.rbmManipulation || 0);
+      const tier = (ragebaitTier(score)?.tier || "F");
+
+      // prevent stacking / duplicates
+      RBM_EDGE_CATS.stop();
+
+      const rate = volcanoRateForTier(tier);
+      if (rate <= 0 || rbmFxHasFiredThisOpen) return;
+
+      rbmFxHasFiredThisOpen = true;
+
+      RBM_VOLCANO_RAIN.fireOnce(3000, rate, () => {
+        if (tier === "S" || tier === "S+" || tier === "S++") {
+          RBM_EDGE_CATS.start();
+        }
+      });
+    };
+
+
+
 
     el.querySelector("#rbm-toggle").onclick = (e) => {
       e.stopPropagation();
@@ -990,6 +1026,15 @@
   function scalePer1kTo100(x, k) {
     return clamp(100 * (1 - Math.exp(-(Math.max(0, x) / Math.max(1e-6, k)))));
   }
+  function setCatCountUI(n) {
+  try {
+    const sec = document.getElementById("rbm-catsec");
+    const el = document.getElementById("rbm-catcount");
+    if (!sec || !el) return;
+    el.textContent = `${Number(n) || 0} cats deployed`;
+  } catch {}
+}
+
 
   function setDebug(msg) {
     try {
@@ -1495,6 +1540,288 @@
     if (s <= 70)  return { tier: "S+",  text: "S+ TIER RAGEBAIT" };
     return         { tier: "S++", text: "S++ TIER RAGEBAIT" };
   }
+  
+  function isSTierOrAbove(score) {
+    const t = ragebaitTier(score)?.tier || "F";
+    return (t === "S" || t === "S+" || t === "S++");
+  }
+  const RBM_VOLCANO_RAIN = (() => {
+    const ID = "rbm-volcano-rain";
+    let intervalId = null;
+    let totalSpawned = 0;
+    let killTimer = null;
+
+    const MIN_SIZE = 18;
+    const MAX_SIZE = 56;
+    const MIN_DURATION = 2.5;
+    const MAX_DURATION = 6.5;
+    const WIND = 40;
+
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    function ensureContainer() {
+      let c = document.getElementById(ID);
+      if (c) return c;
+
+      c = document.createElement("div");
+      c.id = ID;
+      c.style.cssText = [
+        "position:fixed",
+        "inset:0",
+        "pointer-events:none",
+        "overflow:hidden",
+        "z-index:2147483647"
+      ].join(";");
+
+      const s = document.createElement("style");
+      s.id = ID + "-style";
+      s.textContent = `
+        #${ID} .drop{
+          position:absolute;
+          top:-10vh;
+          will-change:transform;
+          filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25));
+          user-select:none;
+        }
+      `;
+      document.documentElement.appendChild(s);
+      document.documentElement.appendChild(c);
+      return c;
+    }
+
+    function spawnOne(container) {
+      const el = document.createElement("div");
+      el.className = "drop";
+      el.textContent = "🌋";
+
+      const vw = window.innerWidth;
+      const startX = rand(0, vw);
+      const size = rand(MIN_SIZE, MAX_SIZE);
+      const duration = rand(MIN_DURATION, MAX_DURATION);
+
+      const drift = rand(-WIND, WIND);
+      const rotate = rand(-40, 40);
+
+      el.style.left = `${startX}px`;
+      el.style.fontSize = `${size}px`;
+
+      container.appendChild(el);
+
+      const anim = el.animate(
+        [
+          { transform: `translate(0, 0) rotate(${rotate}deg)`, opacity: 1 },
+          {
+            transform: `translate(${drift}px, ${window.innerHeight + 200}px) rotate(${rotate + rand(-90, 90)}deg)`,
+            opacity: 1
+          }
+        ],
+        { duration: duration * 1000, easing: "linear", fill: "forwards" }
+      );
+
+      anim.onfinish = () => el.remove();
+    }
+
+    function stopSpawning() {
+      if (!intervalId) return;
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+
+    function hardClear() {
+      stopSpawning();
+      const c = document.getElementById(ID);
+      if (c) c.remove();
+      const s = document.getElementById(ID + "-style");
+      if (s) s.remove();
+    }
+
+    // fireOnce(ms, spawnPerSecond, onStopped)
+    function fireOnce(ms = 3000, spawnPerSecond = 20, onStopped) {
+      spawnPerSecond = Number(spawnPerSecond) || 0;
+      if (spawnPerSecond <= 0) return;
+
+      if (killTimer) { clearTimeout(killTimer); killTimer = null; }
+      hardClear();
+
+      const container = ensureContainer();
+      intervalId = setInterval(() => spawnOne(container), 1000 / spawnPerSecond);
+
+      killTimer = setTimeout(() => {
+        stopSpawning();
+        killTimer = null;
+        try { if (typeof onStopped === "function") onStopped(); } catch {}
+        // drops finish naturally
+      }, ms);
+    }
+
+    return { fireOnce, hardClear };
+  })();
+  const RBM_EDGE_CATS = (() => {
+    const ID = "rbm-edge-cats";
+    const STYLE_ID = "rbm-edge-cats-style";
+
+    const CENTER_SAFE_W = 0.55;
+    const CENTER_SAFE_H = 0.55;
+    const EDGE_BAND = 140;
+
+    const CAT_INTERVAL_MS = 6000;
+    const CAT_LIFETIME_MS = 9000;
+    const MAX_CATS = 3;
+
+    let intervalId = null;
+
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    function ensure() {
+      let layer = document.getElementById(ID);
+      if (!layer) {
+        layer = document.createElement("div");
+        layer.id = ID;
+        layer.style.cssText = [
+          "position:fixed",
+          "inset:0",
+          "pointer-events:none",
+          "z-index:2147483646",
+          "overflow:hidden"
+        ].join(";");
+        document.documentElement.appendChild(layer);
+      }
+
+      if (!document.getElementById(STYLE_ID)) {
+        const s = document.createElement("style");
+        s.id = STYLE_ID;
+        s.textContent = `
+          #${ID} .cat{
+            position:fixed;
+            width:min(260px, 22vw);
+            height:auto;
+            border-radius:12px;
+            box-shadow:0 10px 30px rgba(0,0,0,0.35);
+            transform:scale(0.85);
+            opacity:0;
+            will-change:transform, opacity;
+            animation: rbmCatIn 260ms ease-out forwards;
+          }
+          @keyframes rbmCatIn { to { transform:scale(1); opacity:1; } }
+          #${ID} .cat.out{ animation: rbmCatOut 600ms ease-in forwards; }
+          @keyframes rbmCatOut { to { transform:scale(0.96); opacity:0; } }
+        `;
+        document.documentElement.appendChild(s);
+      }
+
+      return layer;
+    }
+
+    function getSafeBox(vw, vh) {
+      const safeW = vw * CENTER_SAFE_W;
+      const safeH = vh * CENTER_SAFE_H;
+      const left = (vw - safeW) / 2;
+      const top = (vh - safeH) / 2;
+      return { left, top, right: left + safeW, bottom: top + safeH };
+    }
+
+    function overlaps(a, b) {
+      return a.left < b.right && a.right > b.left &&
+            a.top < b.bottom && a.bottom > b.top;
+    }
+
+    function pickEdgePosition(w, h) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const safe = getSafeBox(vw, vh);
+
+      let x, y;
+      const edge = Math.floor(rand(0, 4));
+
+      if (edge === 0) { // left
+        x = rand(8, EDGE_BAND);
+        y = rand(8, vh - h - 8);
+      } else if (edge === 1) { // right
+        x = rand(vw - EDGE_BAND - w, vw - w - 8);
+        y = rand(8, vh - h - 8);
+      } else if (edge === 2) { // top
+        x = rand(8, vw - w - 8);
+        y = rand(8, EDGE_BAND);
+      } else { // bottom
+        x = rand(8, vw - w - 8);
+        y = rand(vh - EDGE_BAND - h, vh - h - 8);
+      }
+
+      const box = { left: x, top: y, right: x + w, bottom: y + h };
+      if (overlaps(box, safe)) {
+        x = (x + w / 2 < vw / 2)
+          ? rand(8, EDGE_BAND)
+          : rand(vw - EDGE_BAND - w, vw - w - 8);
+      }
+      return { x, y };
+    }
+
+    function spawnCat() {
+      const layer = ensure();
+      if (layer.children.length >= MAX_CATS) return;
+
+      const img = document.createElement("img");
+      img.className = "cat";
+
+      const estW = Math.min(260, Math.round(window.innerWidth * 0.22));
+      const estH = estW;
+
+      const { x, y } = pickEdgePosition(estW, estH);
+      img.style.left = `${Math.round(x)}px`;
+      img.style.top  = `${Math.round(y)}px`;
+
+      img.decoding = "async";
+      img.loading = "eager";
+      img.referrerPolicy = "no-referrer"; // reduces some site-side blocks
+
+      img.src = "https://cataas.com/cat?width=520&height=520&rand=" + Math.random();
+
+      layer.appendChild(img);
+      totalSpawned++;   
+      setCatCountUI(totalSpawned);
+
+      setTimeout(() => img.classList.add("out"), CAT_LIFETIME_MS - 600);
+      setTimeout(() => img.remove(), CAT_LIFETIME_MS);
+    }
+
+    function start() {
+      if (intervalId) return;
+      ensure();
+      totalSpawned = 0;
+      setCatCountUI(totalSpawned);
+      spawnCat(); // first one immediately
+      intervalId = setInterval(spawnCat, CAT_INTERVAL_MS);
+    }
+
+    function stop() {
+      if (intervalId) { clearInterval(intervalId); intervalId = null; }
+      const layer = document.getElementById(ID);
+      if (layer) layer.remove();
+      const s = document.getElementById(STYLE_ID);
+      if (s) s.remove();
+      totalSpawned = 0;
+      setCatCountUI(totalSpawned);
+
+    }
+
+    return { start, stop };
+  })();
+  function tierFromScore(score) {
+    return (ragebaitTier(score)?.tier || "F"); // "F","D","C","B","A","S","S+","S++"
+  }
+
+  function volcanoRateForTier(tier) {
+    // noticeably lower density as tier drops; F = none
+    switch (tier) {
+      case "S++": return 30;
+      case "S+":  return 22;
+      case "S":   return 16;
+      case "A":   return 10;
+      case "B":   return 7;
+      case "C":   return 5;
+      default:    return 0; // F
+    }
+  }
 
 
   async function main() {
@@ -1557,9 +1884,21 @@
       const punct01 = punctuationPressure01(tactic.punct);
 
       createOverlay();
+      const overlayEl = document.getElementById("rbm-overlay");
+      if (overlayEl) overlayEl.dataset.rbmManipulation = String(manipulation);
+
       const quoteEl = document.getElementById("rbm-quote");
       if (quoteEl) {
         const t = ragebaitTier(manipulation);
+        const tierNow = ragebaitTier(manipulation)?.tier || "F";
+        const catSec = document.getElementById("rbm-catsec");
+
+        if (catSec) {
+          const showCats = (tierNow === "S" || tierNow === "S+" || tierNow === "S++");
+          catSec.style.display = showCats ? "block" : "none";
+          if (showCats) setCatCountUI(0);
+        }
+
         quoteEl.textContent = t.text;
         quoteEl.classList.remove(
           "rbm-tier-f","rbm-tier-d","rbm-tier-c","rbm-tier-b","rbm-tier-a",
