@@ -530,7 +530,7 @@
           <div class="rbm-quote" id="rbm-quote"></div>
         </div>
         <div class="rbm-section" id="rbm-catsec" style="display:none;">
-          <div class="rbm-section-title">Sorry About The Ragebait, Hope The Cats Cheer You Up!</div>
+          <div class="rbm-section-title">Sorry About The Ragebait, Hope Cats Cheer You Up!</div>
           <div id="rbm-catcount"
               style="font-size:18px;font-weight:900;letter-spacing:0.02em;line-height:1.25;color:rgba(238,241,246,0.85);">
             —
